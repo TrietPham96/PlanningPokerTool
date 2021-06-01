@@ -1,219 +1,214 @@
 <template>
-  <v-container>
-    <v-row>
-      <v-col cols="12" sm="12">
-        <v-sheet min-height="70vh" rounded="lg">
-          <span>Prize number: {{ prizeNumber }}</span>
-          <button
-            type="button"
-            @click="!rolling && prizeNumber < 8 && prizeNumber++"
-            :disabled="rolling || prizeNumber === 8"
-          >
-            Add
-          </button>
-          <button
-            type="button"
-            @click="!rolling && prizeNumber > 2 && prizeNumber--"
-            :disabled="rolling || prizeNumber === 2"
-          >
-            Remove
-          </button>
-          <div class="wheel-wrapper">
-            <div class="wheel-pointer" @click="onClickRotate">Start</div>
-            <div
-              class="wheel-bg"
-              :class="{ freeze: freeze }"
-              :style="`transform: rotate(${wheelDeg}deg)`"
-            >
-              <div class="prize-list">
-                <div
-                  class="prize-item-wrapper"
-                  v-for="(item, index) in prizeList"
-                  :key="index"
-                >
-                  <div
-                    class="prize-item"
-                    :style="`transform: rotate(${
-                      (360 / prizeList.length) * index
-                    }deg)`"
-                  >
-                    <div class="prize-name">
-                      {{ item.name }}
-                    </div>
-                    <div class="prize-icon">
-                      <img :src="item.icon" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </v-sheet>
-      </v-col>
-    </v-row>
-  </v-container>
+  <v-col cols="12" sm="8">
+    <v-sheet height="40vh" rounded="lg" class="main-content">
+      <div class="selector">
+        <ul>
+          <li v-for="memberItem in memberListDisplay" :key="memberItem.Id">
+            <input
+              id="memberItem.Id"
+              type="checkbox"
+              :checked="memberItem.IsTurn"
+            />
+            <label for="memberItem.Id">{{ memberItem.MemberName }}</label>
+          </li>
+        </ul>
+        <button @click="openxxx">Click here</button>
+      </div>
+    </v-sheet>
+  </v-col>
 </template>
 
 <script>
+const angleStart = -360;
+
 export default {
   name: "MainPoker",
+  props: {
+    memberListDetail: {
+      type: Array,
+    },
+  },
   data() {
     return {
-      freeze: false,
-      rolling: false,
-      wheelDeg: 0,
-      prizeNumber: 8,
-      prizeListOrigin: [
-        {
-          icon: "https://picsum.photos/40?random=1",
-          name: "$10000",
-        },
-        {
-          icon: "https://picsum.photos/40?random=6",
-          name: "Thank you!",
-        },
-        {
-          icon: "https://picsum.photos/40?random=2",
-          name: "$500",
-        },
-        {
-          icon: "https://picsum.photos/40?random=3",
-          name: "$100",
-        },
-        {
-          icon: "https://picsum.photos/40?random=6",
-          name: "Thank you!",
-        },
-        {
-          icon: "https://picsum.photos/40?random=4",
-          name: "$50",
-        },
-        {
-          icon: "https://picsum.photos/40?random=5",
-          name: "$10",
-        },
-        {
-          icon: "https://picsum.photos/40?random=6",
-          name: "Thank you!",
-        },
-      ],
+      isOpen: false,
+      memberList: [],
     };
   },
   computed: {
-    prizeList() {
-      return this.prizeListOrigin.slice(0, this.prizeNumber);
+    memberListDisplay() {
+      return this.memberList.filter((x) => x.IsActive);
     },
   },
   created() {},
   methods: {
-    onClickRotate() {
-      if (this.rolling) {
-        return;
-      }
-      const result = Math.floor(Math.random() * this.prizeList.length);
-      this.roll(result);
+    rotate(li, d) {
+      $({ d: angleStart }).animate(
+        { d: d },
+        {
+          step: function (now) {
+            $(li)
+              .css({ transform: "rotate(" + now + "deg)" })
+              .find("label")
+              .css({ transform: "rotate(" + -now + "deg)" });
+          },
+          duration: 0,
+        }
+      );
     },
-    roll(result) {
-      this.rolling = true;
-      const { wheelDeg, prizeList } = this;
-      this.wheelDeg =
-        wheelDeg -
-        (wheelDeg % 360) +
-        6 * 360 +
-        (360 - (360 / prizeList.length) * result);
-      setTimeout(() => {
-        this.rolling = false;
-        alert("Result：" + prizeList[result].name);
-      }, 4500);
+    toggleOptions(s) {
+      $(s).toggleClass("open");
+      let li = $(s).find("li");
+      let deg = $(s).hasClass("half") ? 180 / (li.length - 1) : 360 / li.length;
+      for (let i = 0; i < li.length; i++) {
+        let d = $(s).hasClass("half") ? i * deg - 90 : i * deg;
+        $(s).hasClass("open")
+          ? this.rotate(li[i], d)
+          : this.rotate(li[i], angleStart);
+      }
+    },
+    openxxx() {
+      this.toggleOptions($(".selector"));
+    },
+    shuffleList(array) {
+      let currentIndex = array.length,
+        randomIndex;
+
+      // While there remain elements to shuffle...
+      while (0 !== currentIndex) {
+        // Pick a remaining element...
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex--;
+
+        // And swap it with the current element.
+        [array[currentIndex], array[randomIndex]] = [
+          array[randomIndex],
+          array[currentIndex],
+        ];
+      }
+
+      return array;
     },
   },
   watch: {
-    prizeNumber() {
-      this.freeze = true;
-      this.wheelDeg = 0;
-
-      setTimeout(() => {
-        this.freeze = false;
-      }, 0);
+    memberList() {
+      this.toggleOptions($(".selector"));
     },
+  },
+  created() {
+    let tempList = [...this.memberListDetail];
+    this.memberList = this.shuffleList(tempList);
+  },
+  mounted() {
+    this.toggleOptions($(".selector"));
+    setTimeout(this.toggleOptions(".selector"), 100);
   },
 };
 </script>
-<style lang="scss">
-.wheel-wrapper {
-  width: 300px;
-  height: 300px;
+<style>
+.main-content {
+  background: linear-gradient(#eee, #ccc);
+}
+
+.selector {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  left: 30%;
+  top: 20%;
+  width: 140px;
+  height: 140px;
+  margin-top: -70px;
+  margin-left: -70px;
 }
 
-.wheel-pointer {
-  width: 60px;
-  height: 60px;
-  border-radius: 1000px;
-  background: yellow;
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-  line-height: 60px;
-  z-index: 10;
-  cursor: pointer;
-
-  &::after {
-    content: "";
-    position: absolute;
-    top: -32px;
-    left: 50%;
-    border-width: 0 8px 40px;
-    border-style: solid;
-    border-color: transparent transparent yellow;
-    transform: translateX(-50%);
-  }
-}
-.wheel-bg {
-  width: 100%;
-  height: 100%;
-  border-radius: 1000px;
-  overflow: hidden;
-  transition: transform 4s ease-in-out;
-  background: #7eef97;
-
-  &.freeze {
-    transition: none;
-    background: red;
-  }
+.selector,
+.selector button {
+  font-family: "Oswald", sans-serif;
+  font-weight: 300;
 }
 
-.prize-list {
-  width: 100%;
-  height: 100%;
+.selector button {
   position: relative;
-  text-align: center;
-}
-
-.prize-item-wrapper {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 150px;
-  height: 150px;
-}
-
-.prize-item {
   width: 100%;
   height: 100%;
-  transform-origin: bottom;
+  padding: 10px;
+  background: #428bca;
+  border-radius: 50%;
+  border: 0;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  box-shadow: 0 3px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.1s;
+}
 
-  .prize-name {
-    padding: 16px 0;
-  }
+.selector button:hover {
+  background: #3071a9;
+}
 
-  .prize-icon {
-  }
+.selector button:focus {
+  outline: none;
+}
+
+.selector ul {
+  position: absolute;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  top: -20px;
+  right: -20px;
+  bottom: -20px;
+  left: -20px;
+}
+
+.selector li {
+  position: absolute;
+  width: 0;
+  height: 100%;
+  margin: 0 50%;
+  -webkit-transform: rotate(-360deg);
+  transition: all 0.8s ease-in-out;
+}
+
+.selector li input {
+  display: none;
+}
+
+.selector li input + label {
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  width: 0;
+  height: 0;
+  line-height: 1px;
+  margin-left: 0;
+  background: #fff;
+  border-radius: 50%;
+  text-align: center;
+  font-size: 1px;
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: none;
+  transition: all 0.8s ease-in-out, color 0.1s, background 0.1s;
+}
+
+.selector li input + label:hover {
+  background: #f0f0f0;
+}
+
+.selector li input:checked + label {
+  background: #5cb85c;
+  color: white;
+}
+
+.selector li input:checked + label:hover {
+  background: #449d44;
+}
+
+.selector.open li input + label {
+  width: 80px;
+  height: 80px;
+  line-height: 80px;
+  margin-left: -40px;
+  box-shadow: 0 3px 3px rgba(0, 0, 0, 0.1);
+  font-size: 14px;
 }
 </style>

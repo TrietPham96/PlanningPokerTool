@@ -1,15 +1,16 @@
 <template>
   <v-navigation-drawer app clipped right>
     <v-list rounded>
-      <v-list-item v-for="memberItem in memberList" :key="memberItem.id" link>
+      <v-list-item v-for="memberItem in memberList" :key="memberItem.Id" link>
         <v-list-item-content>
-          <v-list-item-title>{{ memberItem.memberName }}</v-list-item-title>
+          <v-list-item-title>{{ memberItem.MemberName }}</v-list-item-title>
         </v-list-item-content>
         <v-list-item-action>
           <v-switch
             inset
             color="success"
-            v-model="memberItem.isActive"
+            input-value="memberItem.IsActive"
+            @change="updateStatus(memberItem)"
           ></v-switch>
         </v-list-item-action>
       </v-list-item>
@@ -20,21 +21,20 @@
 <script>
 export default {
   name: "MemberList",
+  props: {
+    memberListDetail: {
+      type: Array,
+    },
+  },
   data() {
     return {
-      memberList: [
-        { id: "1", memberName: "David", isActive: true },
-        { id: "2", memberName: "John", isActive: true },
-        { id: "3", memberName: "Tom", isActive: true },
-        { id: "4", memberName: "Evan", isActive: true },
-        { id: "5", memberName: "Robin", isActive: true },
-        { id: "6", memberName: "Alex", isActive: true },
-        { id: "7", memberName: "Cathy", isActive: true },
-        { id: "8", memberName: "Adam", isActive: true },
-        { id: "9", memberName: "Johnson", isActive: true },
-        { id: "10", memberName: "Chris", isActive: true },
-      ],
+      memberList: [],
     };
+  },
+  watch: {
+    memberList(value) {
+      this.$emit("updatedMemberList", value);
+    },
   },
   computed: {
     // ...mapGetters([
@@ -43,7 +43,15 @@ export default {
     //   'roles'
     // ])
   },
-  created() {},
-  methods: {},
+  mounted() {
+    this.memberList = [...this.memberListDetail];
+  },
+  methods: {
+    updateStatus(item) {
+      item.IsActive = !item.IsActive;
+      let idx = this.memberList.findIndex((x) => x.Id == item.Id);
+      this.$set(this.memberList, idx, item);
+    },
+  },
 };
 </script>
