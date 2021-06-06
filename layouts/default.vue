@@ -26,7 +26,7 @@
     </v-main>
 
     <member-list
-      :memberListDetail="memberList"
+      :memberListDetail="memberListInTeam"
       @updatedMemberList="childrenUpdatedMemberList"
     />
   </v-app>
@@ -56,7 +56,7 @@ export default {
           MemberName: "David",
           IsActive: true,
           Result: 0,
-          IsTurn: true,
+          IsTurn: false,
         },
         {
           Id: "2",
@@ -123,16 +123,17 @@ export default {
         },
       ],
       uniqueId: 1,
+      memberListInTeam: [],
     };
   },
   methods: {
     childrenUpdatedMemberList(val) {
-      this.memberList = val;
+      this.memberListInTeam = val;
       this.uniqueId++;
     },
-    
   },
   created() {
+    this.memberListInTeam = [...this.memberList];
   },
 };
 </script>

@@ -4,21 +4,19 @@
     @input="$emit('input')"
     persistent
     max-width="290"
-    v-if="Object.keys(turnDetailFromChild).length !== 0"
+    v-if="Object.keys(turnDetailData).length !== 0"
   >
     <v-card>
       <v-card-title class="headline">
-        {{ turnDetailFromChild.CurrentUser }} choose
+        {{ turnDetailData.MemberName }} choose
         <v-chip class="ma-2" color="success" text-color="white">
-          {{ turnDetailFromChild.CardInfo }}
+          {{ turnDetailData.CardId }}
         </v-chip>
       </v-card-title>
       <v-card-actions>
         <v-spacer></v-spacer>
         <v-btn @click.native="$emit('input')">Close</v-btn>
-        <v-btn
-          color="success"
-          @click="confirmCard(turnDetailFromChild.CardInfo)"
+        <v-btn color="success" @click="confirmCard(turnDetailData.CardId)"
           >Confirm</v-btn
         >
       </v-card-actions>
@@ -30,7 +28,9 @@
 export default {
   name: "ConfirmDialog",
   data() {
-    return {};
+    return {
+      turnDetailData: Object,
+    };
   },
   props: {
     value: {
@@ -42,8 +42,12 @@ export default {
   },
   methods: {
     confirmCard(id) {
-      this.$bus.emit('increaseCounter', this.counter)
+      this.turnDetailData.CardId = id;
+      this.$bus.$emit("selectedCard", this.turnDetailData);
     },
+  },
+  created() {
+    this.turnDetailData = { ...this.turnDetailFromChild };
   },
   mounted() {},
 };

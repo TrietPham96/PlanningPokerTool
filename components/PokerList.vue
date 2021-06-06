@@ -32,14 +32,19 @@ export default {
   data() {
     return {
       dialog: false,
-      turnDetail: { CurrentUser: "", CardInfo: 0 },
+      turnDetail: { MemberId: 0, MemberName: "", CardId: 0 },
     };
   },
   methods: {
     selectCard(idx) {
       this.dialog = true;
-      this.turnDetail = { CurrentUser: "David", CardInfo: idx };
+      this.turnDetail.CardId = idx;
     },
+  },
+  created() {
+    this.$bus.$on("turnDetailCurrent", (turnDetailData) => {
+      this.turnDetail = {...turnDetailData};
+    });
   },
 };
 </script>

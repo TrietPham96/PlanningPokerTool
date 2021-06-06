@@ -32,6 +32,7 @@ export default {
     return {
       isOpen: false,
       memberList: [],
+      turnDetail: { MemberId: 0, MemberName: "", CardId: 0 },
     };
   },
   computed: {
@@ -85,7 +86,6 @@ export default {
           array[currentIndex],
         ];
       }
-
       return array;
     },
   },
@@ -97,10 +97,24 @@ export default {
   created() {
     let tempList = [...this.memberListDetail];
     this.memberList = this.shuffleList(tempList);
+    this.memberList[0].IsTurn = true;
+    this.$bus.$on("selectedCard", (data) => {
+      let idx = this.memberList.findIndex((x) => x.IsTurn);
+      this.memberList[idx].Result = data.CardId;
+    });
   },
   mounted() {
     this.toggleOptions($(".selector"));
     setTimeout(this.toggleOptions(".selector"), 100);
+    if (this.memberList) {
+      let idx = this.memberList.findIndex((x) => x.IsTurn);
+      this.turnDetail = {
+        MemberId: this.memberList[idx].MemberId,
+        MemberName: this.memberList[idx].MemberName,
+        CardId: 0,
+      };
+      this.$bus.$emit("turnDetailCurrent", this.turnDetail);
+    }
   },
 };
 </script>

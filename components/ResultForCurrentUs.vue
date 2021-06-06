@@ -48,6 +48,7 @@ export default {
   methods: {},
   created() {
     this.memberList = [...this.memberListDetail];
+    
   },
   mounted() {},
 };
